@@ -1,0 +1,25 @@
+# ===== 通用 =====
+Thumbs.db
+Desktop.ini
+.DS_Store
+~$*
+*.tmp
+*.log
+
+# ===== 编辑器 =====
+.vscode/
+.idea/
+.zcode/
+
+# ===== Godot（为后续游戏开发预留）=====
+# Godot 4 导入缓存
+.godot/
+*.translation
+# 导出产物
+/build/
+/export/
+*.exe
+*.pck
+*.zip
+# Windows 特有
+*.import.bak
