@@ -8,7 +8,7 @@ const PAUSE_SCENE := preload("res://scenes/ui/pause_overlay.tscn")
 const DEBUG_SCENE := preload("res://scenes/ui/debug_panel.tscn")
 const DAMAGE_NUMBER_SCENE := preload("res://scenes/common/damage_number.tscn")
 const WATER_BOLT_SCENE := preload("res://scenes/combat/water_bolt.tscn")
-const PLAYER_SPAWN := Vector3(0, 0.5, 10)
+const PLAYER_SPAWN := Vector3(0, 0.5, 96) # 矿镇出生点（与 ash_valley 布设对齐——复审 2026-09-11 #4）
 
 func _ready() -> void:
 	randomize()

@@ -93,6 +93,12 @@ func break_shell() -> void:
 	if state != State.DEAD:
 		_enter(State.STAGGER)
 
+## BOSS 死亡：清除灼热地板（HeatZone 挂在场景上，不由 BOSS 自动释放——复审 2026-09-11 #1）
+func _on_died() -> void:
+	if _heat != null and is_instance_valid(_heat):
+		_heat.queue_free()
+	super._on_died()
+
 ## —— 攻击：砸击 AOE / 冲撞交替 —— ##
 
 func _tick_chase(delta: float) -> void:

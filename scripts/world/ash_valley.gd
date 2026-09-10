@@ -59,14 +59,14 @@ func _build_environment() -> void:
 ## —— 地形：三段结构与攀爬高壁 —— ##
 
 func _build_terrain() -> void:
-	# 地面与边界
+	# 地面与边界（边界墙 20m：攀爬体力上限 100 无法翻越出图——复审 2026-09-11 #2）
 	_add_box(Vector3.ZERO, Vector3(HALF * 2, 1.0, HALF * 2), Color(0.4, 0.38, 0.36))
 	var wall_color := Color(0.28, 0.27, 0.3)
 	var wall_len := HALF * 2 + 2.0
-	_add_box(Vector3(0, 3, -HALF - 0.5), Vector3(wall_len, 6.0, 1.0), wall_color)
-	_add_box(Vector3(0, 3, HALF + 0.5), Vector3(wall_len, 6.0, 1.0), wall_color)
-	_add_box(Vector3(-HALF - 0.5, 3, 0), Vector3(1.0, 6.0, wall_len), wall_color)
-	_add_box(Vector3(HALF + 0.5, 3, 0), Vector3(1.0, 6.0, wall_len), wall_color)
+	_add_box(Vector3(0, 10, -HALF - 0.5), Vector3(wall_len, 20.0, 1.0), wall_color)
+	_add_box(Vector3(0, 10, HALF + 0.5), Vector3(wall_len, 20.0, 1.0), wall_color)
+	_add_box(Vector3(-HALF - 0.5, 10, 0), Vector3(1.0, 20.0, wall_len), wall_color)
+	_add_box(Vector3(HALF + 0.5, 10, 0), Vector3(1.0, 20.0, wall_len), wall_color)
 
 	# 攀爬教学墙（垂直 8m，墙顶宝箱激励；策划案 §8.2：≥65° 陡面攀爬）
 	_add_box(Vector3(0, 4, 78), Vector3(12, 8.0, 1.2), Color(0.34, 0.33, 0.36))
@@ -149,12 +149,12 @@ func _spawn_actors() -> void:
 	for spot: Array in spots:
 		var enemy := _spawn_enemy(ENEMY_SCENES[spot[0]], spot[1])
 		_enemy_slots.append({"pos": spot[1], "scene": ENEMY_SCENES[spot[0]], "enemy": enemy})
-	# 精英（河谷深处）与 BOSS（洞窟底）
+	# 精英（河谷深处）与 BOSS（洞窟底，留出与后墙的间距）
 	var overseer := OVERSEER_SCENE.instantiate()
 	overseer.position = Vector3(0, 0.5, -35)
 	add_child(overseer)
 	var boss := BOSS_SCENE.instantiate()
-	boss.position = Vector3(0, 0.5, -100)
+	boss.position = Vector3(0, 0.5, -104)
 	add_child(boss)
 
 func _spawn_enemy(scene: PackedScene, pos: Vector3) -> EnemyBase:

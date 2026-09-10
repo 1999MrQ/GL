@@ -27,8 +27,7 @@ func interact(player: PlayerCharacter) -> void:
 	# 白模反馈：箱体变亮绿
 	var mat := (_body.mesh as BoxMesh).material as StandardMaterial3D
 	mat.albedo_color = Color(0.5, 0.9, 0.5)
-	EventBus.damage_number_requested.emit(
-		global_position + Vector3(0, 1.2, 0), 0.0, Color(1, 0.9, 0.4), false)
+	TransmuteRing.spawn(get_parent(), global_position, 0.8, Color(1, 0.9, 0.4))
 
 func prompt() -> String:
 	return "" if _opened else tr("INTERACT_CHEST")
