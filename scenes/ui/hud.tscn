@@ -1,0 +1,194 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="Root" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="VignetteTop" type="ColorRect" parent="Root"]
+anchor_right = 1.0
+offset_bottom = 6.0
+grow_horizontal = 2
+mouse_filter = 2
+color = Color(0.92, 0.78, 0.35, 0.3)
+visible = false
+
+[node name="VignetteBottom" type="ColorRect" parent="Root"]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -6.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.92, 0.78, 0.35, 0.3)
+visible = false
+
+[node name="VignetteLeft" type="ColorRect" parent="Root"]
+anchor_bottom = 1.0
+offset_right = 6.0
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.92, 0.78, 0.35, 0.3)
+visible = false
+
+[node name="VignetteRight" type="ColorRect" parent="Root"]
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -6.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.92, 0.78, 0.35, 0.3)
+visible = false
+
+[node name="TopLeft" type="VBoxContainer" parent="Root"]
+offset_left = 24.0
+offset_top = 20.0
+offset_right = 460.0
+offset_bottom = 220.0
+
+[node name="HPRow" type="HBoxContainer" parent="Root/TopLeft"]
+layout_mode = 2
+
+[node name="HPLabel" type="Label" parent="Root/TopLeft/HPRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "生命"
+
+[node name="HPBar" type="ProgressBar" parent="Root/TopLeft/HPRow"]
+custom_minimum_size = Vector2(280, 16)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.001
+value = 1.0
+show_percentage = false
+
+[node name="MPRow" type="HBoxContainer" parent="Root/TopLeft"]
+layout_mode = 2
+
+[node name="MPLabel" type="Label" parent="Root/TopLeft/MPRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "法力"
+
+[node name="MPBar" type="ProgressBar" parent="Root/TopLeft/MPRow"]
+custom_minimum_size = Vector2(280, 10)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.001
+value = 1.0
+show_percentage = false
+
+[node name="StaminaRow" type="HBoxContainer" parent="Root/TopLeft"]
+layout_mode = 2
+
+[node name="StaminaLabel" type="Label" parent="Root/TopLeft/StaminaRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "体力"
+
+[node name="StaminaBar" type="ProgressBar" parent="Root/TopLeft/StaminaRow"]
+custom_minimum_size = Vector2(220, 10)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.001
+value = 1.0
+show_percentage = false
+
+[node name="EnergyRow" type="HBoxContainer" parent="Root/TopLeft"]
+layout_mode = 2
+
+[node name="EnergyLabel" type="Label" parent="Root/TopLeft/EnergyRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "爆发"
+
+[node name="EnergyBar" type="ProgressBar" parent="Root/TopLeft/EnergyRow"]
+custom_minimum_size = Vector2(180, 10)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.001
+value = 0.0
+show_percentage = false
+
+[node name="SkillRow" type="HBoxContainer" parent="Root/TopLeft"]
+layout_mode = 2
+
+[node name="ELabel" type="Label" parent="Root/TopLeft/SkillRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "E 就绪"
+
+[node name="QLabel" type="Label" parent="Root/TopLeft/SkillRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Q 充能中"
+
+[node name="RLabel" type="Label" parent="Root/TopLeft/SkillRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = ""
+
+[node name="PartyBar" type="VBoxContainer" parent="Root"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_top = 20.0
+offset_right = -24.0
+offset_bottom = 150.0
+grow_horizontal = 0
+
+[node name="DustLabel" type="Label" parent="Root/PartyBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 2
+text = "炼金尘 × 0"
+
+[node name="ReactionLabel" type="Label" parent="Root"]
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -220.0
+offset_top = 84.0
+offset_right = 220.0
+offset_bottom = 116.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+text = "反应"
+
+[node name="HintLabel" type="Label" parent="Root"]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -58.0
+offset_bottom = -34.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 1
+text = "操作提示"
+
+[node name="LawLabel" type="Label" parent="Root"]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -30.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+text = "等价交换法则"

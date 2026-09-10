@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MovementConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/config/movement_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+walk_speed = 4.5
+sprint_speed = 7.5
+accel = 40.0
+decel = 50.0
+air_control = 0.35
+jump_velocity = 8.5
+gravity = 22.0
+max_fall_speed = 40.0
+coyote_time = 0.1
+jump_buffer = 0.15
+rotate_speed = 12.0

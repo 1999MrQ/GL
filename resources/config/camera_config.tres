@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CameraConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/config/camera_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+mouse_sensitivity = 0.0028
+pitch_min_deg = -60.0
+pitch_max_deg = 40.0
+spring_length = 4.5
+spring_margin = 0.25
+shoulder_offset = Vector3(0.45, 1.55, 0)
+fov = 60.0

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="CharacterConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/config/character_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+display_name_key = "CHAR_LISEA"
+element = &"fire"
+attack_style = 1
+equivalence_type = 1
+base_hp = 1000.0
+base_atk = 21.0
+level = 1
+crit_rate = 0.05
+crit_damage = 0.5
+element_mastery = 0.0
+attack_range = 1.1
+attack_style_ranged_distance = 14.0
+skill_e_shape = &"toss_field"
+skill_e_name_key = "SKILL_E_LISEA"
+skill_e_cooldown = 7.0
+skill_e_mult = 2.0
+skill_e_gu = 2.0
+skill_e_range = 5.0
+skill_e_poise_damage = 10.0
+skill_e_field_duration = 4.0
+skill_q_shape = &"cone"
+skill_q_name_key = "SKILL_Q_LISEA"
+skill_q_mult = 3.8
+skill_q_gu = 4.0
+skill_q_range = 5.0
+skill_q_poise_damage = 35.0
+skill_q_field_duration = 4.0

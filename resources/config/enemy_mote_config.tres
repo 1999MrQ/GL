@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/config/enemy_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+display_name_key = "ENEMY_MOTE"
+level = 2
+hp_tier_mult = 0.8
+def_level_mult = 3.0
+resist_fire = -0.1
+resist_water = 0.3
+resist_metal = 0.0
+poise_max = 0.0
+move_speed = 3.0
+aggro_radius = 15.0
+attack_range = 9.0
+attack_windup = 0.5
+attack_recover = 0.7
+attack_cooldown = 2.2
+attack_damage = 15.0
+knockback_resist = 0.1
+stagger_time = 0.3

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="CharacterConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/config/character_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+display_name_key = "CHAR_KAVEN"
+element = &"water"
+attack_style = 0
+equivalence_type = 2
+base_hp = 1150.0
+base_atk = 20.0
+level = 1
+crit_rate = 0.05
+crit_damage = 0.5
+element_mastery = 50.0
+attack_range = 1.1
+attack_style_ranged_distance = 14.0
+skill_e_shape = &"heal_ring"
+skill_e_name_key = "SKILL_E_KAVEN"
+skill_e_cooldown = 8.0
+skill_e_mult = 1.6
+skill_e_gu = 2.0
+skill_e_range = 3.0
+skill_e_poise_damage = 10.0
+skill_e_heal_ratio = 0.12
+skill_q_shape = &"freeze_burst"
+skill_q_name_key = "SKILL_Q_KAVEN"
+skill_q_mult = 3.2
+skill_q_gu = 4.0
+skill_q_range = 4.5
+skill_q_poise_damage = 30.0
+skill_q_freeze = 2.0

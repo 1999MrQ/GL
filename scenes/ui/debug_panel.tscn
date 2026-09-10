@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/debug_panel.gd" id="1_debug"]
+
+[node name="DebugPanel" type="CanvasLayer"]
+process_mode = 3
+layer = 20
+script = ExtResource("1_debug")
+
+[node name="Panel" type="Panel" parent="."]
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 500.0
+offset_bottom = 190.0
+modulate = Color(1, 1, 1, 0.88)
+
+[node name="Text" type="Label" parent="Panel"]
+offset_left = 10.0
+offset_top = 8.0
+offset_right = -10.0
+offset_bottom = -8.0
+theme_override_font_sizes/font_size = 13
+text = "调试面板"

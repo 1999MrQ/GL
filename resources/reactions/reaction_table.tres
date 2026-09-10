@@ -1,0 +1,73 @@
+[gd_resource type="Resource" script_class="ReactionTable" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/reaction_table.gd" id="1_table"]
+[ext_resource type="Script" path="res://scripts/systems/reaction_definition.gd" id="2_def"]
+
+[sub_resource type="Resource" id="ReactionDefinition_steam"]
+script = ExtResource("2_def")
+id = &"steam_burst"
+name_key = "REACTION_STEAM_BURST"
+first_element = &"water"
+second_element = &"fire"
+reaction_type = 0
+damage_mult = 1.5
+aura_cost = 1.0
+effect_id = &""
+effect_duration = 0.0
+effect_value = 0.0
+
+[sub_resource type="Resource" id="ReactionDefinition_mist"]
+script = ExtResource("2_def")
+id = &"white_mist"
+name_key = "REACTION_WHITE_MIST"
+first_element = &"fire"
+second_element = &"water"
+reaction_type = 0
+damage_mult = 1.25
+aura_cost = 1.0
+effect_id = &"slow"
+effect_duration = 4.0
+effect_value = 0.3
+
+[sub_resource type="Resource" id="ReactionDefinition_molten"]
+script = ExtResource("2_def")
+id = &"molten_gold"
+name_key = "REACTION_MOLTEN_GOLD"
+first_element = &"fire"
+second_element = &"metal"
+reaction_type = 1
+damage_mult = 2.0
+aura_cost = 1.0
+effect_id = &"armor_break"
+effect_duration = 6.0
+effect_value = 0.25
+
+[sub_resource type="Resource" id="ReactionDefinition_rust"]
+script = ExtResource("2_def")
+id = &"rust"
+name_key = "REACTION_RUST"
+first_element = &"water"
+second_element = &"metal"
+reaction_type = 1
+damage_mult = 1.0
+aura_cost = 1.0
+effect_id = &"dot"
+effect_duration = 8.0
+effect_value = 0.6
+
+[sub_resource type="Resource" id="ReactionDefinition_quench"]
+script = ExtResource("2_def")
+id = &"quench_brittle"
+name_key = "REACTION_QUENCH_BRITTLE"
+first_element = &"metal"
+second_element = &"fire"
+reaction_type = 1
+damage_mult = 0.0
+aura_cost = 1.0
+effect_id = &"stagger_up"
+effect_duration = 3.0
+effect_value = 1.5
+
+[resource]
+script = ExtResource("1_table")
+reactions = [SubResource("ReactionDefinition_steam"), SubResource("ReactionDefinition_mist"), SubResource("ReactionDefinition_molten"), SubResource("ReactionDefinition_rust"), SubResource("ReactionDefinition_quench")]

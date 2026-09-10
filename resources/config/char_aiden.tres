@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="CharacterConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/config/character_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+display_name_key = "CHAR_AIDEN"
+element = &"metal"
+attack_style = 0
+equivalence_type = 0
+base_hp = 1100.0
+base_atk = 22.0
+level = 1
+crit_rate = 0.05
+crit_damage = 0.5
+element_mastery = 0.0
+attack_range = 1.1
+attack_style_ranged_distance = 14.0
+skill_e_shape = &"line"
+skill_e_name_key = "SKILL_E_AIDEN"
+skill_e_cooldown = 6.0
+skill_e_mult = 2.2
+skill_e_gu = 2.0
+skill_e_range = 6.0
+skill_e_poise_damage = 20.0
+skill_q_shape = &"burst"
+skill_q_name_key = "SKILL_Q_AIDEN"
+skill_q_mult = 4.2
+skill_q_gu = 4.0
+skill_q_range = 3.5
+skill_q_poise_damage = 40.0
+skill_q_self_armor = 5.0

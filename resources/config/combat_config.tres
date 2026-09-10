@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CombatConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/config/combat_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+hitstop_light_duration = 0.05
+hitstop_light_scale = 0.1
+hitstop_heavy_duration = 0.09
+hitstop_heavy_scale = 0.05
+flash_duration = 0.15
+knockback_light = 3.0
+knockback_heavy = 7.0
+attack_range = 1.1
+enemy_attack_damage = 30.0
