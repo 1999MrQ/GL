@@ -50,6 +50,10 @@ static func cast(p: PlayerCharacter, is_e: bool, eq: Dictionary) -> void:
 
 	# 元素色炼成阵占位特效
 	TransmuteRing.spawn(p.get_parent(), origin, maxf(2.0, range_size * 0.7), Elements.color(cfg.element))
+	# 策划案 §5.4 BOSS 三阶段：水元素技能打地板生成蒸汽安全区（灼热地板的对策）
+	if cfg.element == Elements.WATER:
+		SteamZone.spawn(p.get_parent(), origin, 3.0 * eq.get("area_mult", 1.0),
+			8.0 * eq.get("effect_duration_mult", 1.0))
 	# 策划案 §9.1：炼成技命中 +8 能量
 	if hit_any:
 		p.runtime.gain_energy(8.0)

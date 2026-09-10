@@ -24,3 +24,7 @@ func wants_burst_q() -> bool:
 
 func wants_equivalence() -> bool:
 	return false
+
+## P2：F 交互（采集/宝箱/传送阵，策划案 §5.1）
+func wants_interact() -> bool:
+	return false

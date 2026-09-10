@@ -21,3 +21,6 @@ func wants_burst_q() -> bool:
 
 func wants_equivalence() -> bool:
 	return Input.is_action_just_pressed("equivalence_r")
+
+func wants_interact() -> bool:
+	return Input.is_action_just_pressed("interact")

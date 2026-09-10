@@ -157,6 +157,22 @@ theme_override_font_sizes/font_size = 14
 horizontal_alignment = 2
 text = "炼金尘 × 0"
 
+[node name="InteractHint" type="Label" parent="Root"]
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -260.0
+offset_top = -110.0
+offset_right = 260.0
+offset_bottom = -82.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 17
+horizontal_alignment = 1
+text = ""
+visible = false
+
 [node name="ReactionLabel" type="Label" parent="Root"]
 anchor_left = 0.5
 anchor_right = 0.5

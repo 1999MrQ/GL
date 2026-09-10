@@ -22,6 +22,7 @@ func _ready() -> void:
 	_test_poise_component()
 	_test_character_runtime()
 	_test_party_inventory()
+	_test_climb_classify()
 	_test_localization()
 	_test_pool_manager()
 	_test_save_manager_roundtrip()
@@ -242,6 +243,18 @@ func _test_party_inventory() -> void:
 	check(inv.can_take_dust(3) and inv.take_dust(3), "质之炼成可扣 3 尘")
 	check(not inv.can_take_dust(3), "不足 3 尘时不可扣")
 	check(not inv.take_dust(3), "不足时扣除失败")
+	# P2 采集资源（策划案 §8.1：矿脉/药草/水镜露）
+	inv.add_resource(&"ore", 2)
+	inv.add_resource(&"herb", 2)
+	inv.add_resource(&"dew", 1)
+	check(inv.iron == 2 and inv.herb == 2 and inv.dew == 1, "采集资源分栏入包")
+
+func _test_climb_classify() -> void:
+	print("-- ClimbState：陡面判定（策划案 §8.2：≥65° 可攀）")
+	check(not ClimbState.is_climbable(Vector3(0, 0.94, 0.342)), "20° 缓坡不可攀")
+	check(not ClimbState.is_climbable(Vector3(0, 1, 0)), "水平地面不可攀")
+	check(ClimbState.is_climbable(Vector3(0, 0.342, 0.94)), "70° 陡面可攀")
+	check(ClimbState.is_climbable(Vector3(0, 0, -1)), "垂直墙可攀")
 
 func _test_health_component() -> void:
 	print("-- HealthComponent：伤害 / 无敌 / 死亡 / 治疗")
@@ -289,6 +302,7 @@ func _test_configs_and_scenes() -> void:
 		"enemy_puppet": "res://resources/config/enemy_puppet_config.tres",
 		"enemy_mote": "res://resources/config/enemy_mote_config.tres",
 		"enemy_overseer": "res://resources/config/enemy_overseer_config.tres",
+		"boss_colossus": "res://resources/config/boss_colossus_config.tres",
 		"reactions": "res://resources/reactions/reaction_table.tres",
 	}
 	for key in config_paths:
@@ -302,6 +316,13 @@ func _test_configs_and_scenes() -> void:
 		"enemy_puppet": "res://scenes/characters/enemies/enemy_puppet.tscn",
 		"enemy_mote": "res://scenes/characters/enemies/enemy_mote.tscn",
 		"enemy_overseer": "res://scenes/characters/enemies/enemy_overseer.tscn",
+		"boss_colossus": "res://scenes/characters/enemies/boss_colossus.tscn",
+		"ash_valley": "res://scenes/world/ash_valley.tscn",
+		"gather_node": "res://scenes/world/gather_node.tscn",
+		"chest": "res://scenes/world/chest.tscn",
+		"teleport_gate": "res://scenes/world/teleport_gate.tscn",
+		"puzzle_lamp": "res://scenes/world/puzzle_lamp.tscn",
+		"puzzle_door": "res://scenes/world/puzzle_door.tscn",
 		"training_dummy": "res://scenes/common/training_dummy.tscn",
 		"damage_number": "res://scenes/common/damage_number.tscn",
 		"water_bolt": "res://scenes/combat/water_bolt.tscn",

@@ -77,6 +77,9 @@ static func resolve_attack(target: Object, ctx: DamageContext) -> Dictionary:
 		target.call("damage_poise", ctx.poise_damage)
 
 	# —— 反应附加效果（策划案 §9.4；质之炼成效果时长 ×2 经 ctx.effect_duration_mult）—— #
+	if reaction != null and target.has_method("break_shell"):
+		# 熔金破壳（策划案 §9.2 BOSS 行：熔金反应可直接削除护壳）
+		target.call("break_shell")
 	if reaction != null and reaction.effect_id != &"" and target.has_method("status_holder"):
 		var status: StatusHolder = target.call("status_holder")
 		if status != null:

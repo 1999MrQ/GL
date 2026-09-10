@@ -2,7 +2,7 @@ extends Node
 ## 启动入口（技术方案 §2.2 scenes/main）：
 ## P1 装配 = PartyManager（3 角色常驻）+ 竞技场 + HUD + 暂停 + 调试面板 + 池注册。
 
-const ARENA_SCENE := preload("res://scenes/world/p0_arena.tscn")
+const ASH_VALLEY_SCENE := preload("res://scenes/world/ash_valley.tscn")
 const HUD_SCENE := preload("res://scenes/ui/hud.tscn")
 const PAUSE_SCENE := preload("res://scenes/ui/pause_overlay.tscn")
 const DEBUG_SCENE := preload("res://scenes/ui/debug_panel.tscn")
@@ -28,7 +28,7 @@ func _ready() -> void:
 		DataManager.config("char_kaven"),
 	])
 
-	add_child(ARENA_SCENE.instantiate())
+	add_child(ASH_VALLEY_SCENE.instantiate())
 	add_child(HUD_SCENE.instantiate())
 	add_child(PAUSE_SCENE.instantiate())
 	if OS.is_debug_build():

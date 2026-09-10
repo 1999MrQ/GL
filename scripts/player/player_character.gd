@@ -55,6 +55,7 @@ func _ready() -> void:
 		"idle": IdleState.new(),
 		"run": RunState.new(),
 		"air": AirState.new(),
+		"climb": ClimbState.new(),
 		"attack": AttackState.new(),
 		"hit": HitState.new(),
 	}, &"idle")
@@ -113,6 +114,8 @@ func _process(delta: float) -> void:
 
 ## —— 技能与等价交换（策划案 §5.1 输入 / §6.1-6.3 规则）—— ##
 
+var current_interactable: Node = null ## P2：扫描到的最近可交互对象（HUD 提示与 F 触发）
+
 func _tick_combat_inputs() -> void:
 	if actor_source.wants_skill_e():
 		try_cast_skill_e()
@@ -120,6 +123,30 @@ func _tick_combat_inputs() -> void:
 		try_cast_burst_q()
 	if actor_source.wants_equivalence():
 		try_activate_equivalence()
+	# P2 交互（策划案 §10 F 交互）：扫描 2.5m 内最近可交互对象
+	current_interactable = find_interactable()
+	if actor_source.wants_interact() and current_interactable != null:
+		current_interactable.call("interact", self)
+
+## 眼部沿 direction 的墙面探测（攀爬入口；仅 world 层）
+func probe_wall(direction: Vector3) -> Dictionary:
+	var from := global_position + Vector3.UP * 1.2
+	var query := PhysicsRayQueryParameters3D.create(from, from + direction * 0.9, 1)
+	return get_world_3d().direct_space_state.intersect_ray(query)
+
+## 2.5m 内最近的可交互对象（组 interactables）
+func find_interactable() -> Node:
+	var best: Node = null
+	var best_dist := 2.5
+	for node in get_tree().get_nodes_in_group("interactables"):
+		var n3 := node as Node3D
+		if n3 == null:
+			continue
+		var dist := n3.global_position.distance_to(global_position)
+		if dist < best_dist:
+			best_dist = dist
+			best = node
+	return best
 
 func try_cast_skill_e() -> void:
 	if _dead or runtime.e_cooldown_left > 0.0:

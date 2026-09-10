@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/config/enemy_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+display_name_key = "BOSS_COLOSSUS"
+level = 20
+hp_tier_mult = 20.0
+def_level_mult = 5.0
+resist_fire = 0.0
+resist_water = 0.0
+resist_metal = 0.0
+poise_max = 200.0
+move_speed = 2.8
+aggro_radius = 25.0
+attack_range = 3.2
+attack_windup = 0.7
+attack_recover = 1.2
+attack_cooldown = 2.2
+attack_damage = 60.0
+knockback_resist = 1.0
+stagger_time = 0.5

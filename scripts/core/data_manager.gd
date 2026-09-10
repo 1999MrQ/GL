@@ -15,6 +15,7 @@ const _CONFIG_PATHS: Dictionary = {
 	"enemy_puppet": "res://resources/config/enemy_puppet_config.tres",
 	"enemy_mote": "res://resources/config/enemy_mote_config.tres",
 	"enemy_overseer": "res://resources/config/enemy_overseer_config.tres",
+	"boss_colossus": "res://resources/config/boss_colossus_config.tres",
 	"reactions": "res://resources/reactions/reaction_table.tres",
 }
 

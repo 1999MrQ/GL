@@ -263,6 +263,136 @@ func _run() -> void:
 		"破霸后 5s 易伤（承伤 ×1.3）")
 	overseer.queue_free()
 
+	# —— 6b. P2：攀爬 / 滑翔 / 交互 / 谜题 / BOSS 三阶段 —— #
+	var p2_pos: Vector3 = player.global_position
+
+	# 攀爬：垂直墙立在玩家前方（W 前进方向为 -Z），推向墙面应自动扒墙并上移
+	var climb_wall := StaticBody3D.new()
+	climb_wall.collision_layer = 1
+	var wall_col := CollisionShape3D.new()
+	var wall_box := BoxShape3D.new()
+	wall_box.size = Vector3(6, 12, 1)
+	wall_col.shape = wall_box
+	climb_wall.add_child(wall_col)
+	climb_wall.global_position = p2_pos + Vector3(0, 6, -1.3)
+	add_child(climb_wall)
+	await _frames(2)
+	Input.action_press("move_forward")
+	await _frames(10)
+	check(player.fsm.current_id == &"climb", "推向 ≥65° 陡面进入攀爬（state=%s）" % player.fsm.current_id)
+	var y_on_wall := player.global_position.y
+	await _frames(30)
+	check(player.global_position.y > y_on_wall + 0.8,
+		"攀爬沿墙上移（%.2f → %.2f）" % [y_on_wall, player.global_position.y])
+	Input.action_release("move_forward")
+
+	# 滑翔：空中再按跳跃 → 垂直速度钳制 -3 m/s，体力 8/s
+	player.global_position = Vector3(p2_pos.x, 12.0, p2_pos.z)
+	await _frames(5) # 进入下落
+	Input.action_press("jump")
+	await _frames(3)
+	Input.action_release("jump")
+	await _frames(60) # 1s：未滑翔时已坠超 -20 m/s
+	check(player.vertical_velocity >= -3.5, "滑翔钳制下坠速度（vv=%.2f）" % player.vertical_velocity)
+	check(player.stamina.stamina < 100.0, "滑翔消耗体力 8/s")
+	player.global_position = Vector3(p2_pos.x, 0.5, p2_pos.z)
+	await _frames(20)
+
+	# 采集：F 采集铁矿入包（策划案 §8.1）
+	var gather := (load("res://scenes/world/gather_node.tscn") as PackedScene).instantiate()
+	add_child(gather)
+	gather.global_position = player.global_position + Vector3(0, 0, 1.5)
+	var iron_before := player.inventory.iron
+	Input.action_press("interact")
+	await _frames(3)
+	Input.action_release("interact")
+	await _frames(2)
+	check(player.inventory.iron == iron_before + 2, "F 采集铁矿 ×2 入包")
+
+	# 宝箱：F 开启得炼金尘
+	var chest := (load("res://scenes/world/chest.tscn") as PackedScene).instantiate()
+	add_child(chest)
+	chest.global_position = player.global_position + Vector3(0, 0, 1.5)
+	var dust_before := player.inventory.dust
+	Input.action_press("interact")
+	await _frames(3)
+	Input.action_release("interact")
+	await _frames(2)
+	check(player.inventory.dust > dust_before, "F 开启宝箱得炼金尘")
+
+	# 传送阵：解锁 A/B，激活 A 传送到 B（策划案 §8.1 传送炼成阵 ×3 的最小形态）
+	var gate_a := (load("res://scenes/world/teleport_gate.tscn") as PackedScene).instantiate()
+	var gate_b := (load("res://scenes/world/teleport_gate.tscn") as PackedScene).instantiate()
+	gate_a.gate_id = &"t_a"
+	gate_b.gate_id = &"t_b"
+	add_child(gate_a)
+	add_child(gate_b)
+	gate_a.global_position = player.global_position + Vector3(0, 0, 1.5)
+	gate_b.global_position = player.global_position + Vector3(0, 0, -8)
+	Input.action_press("interact")
+	await _frames(3)
+	Input.action_release("interact")
+	await _frames(2)
+	check(gate_a.is_unlocked(), "F 激活传送阵 A")
+	gate_b.interact(player) # 直接解锁 B
+	check(gate_b.is_unlocked(), "传送阵 B 解锁")
+	var b_pos: Vector3 = gate_b.global_position
+	Input.action_press("interact")
+	await _frames(3)
+	Input.action_release("interact")
+	await _frames(2)
+	check(player.global_position.distance_to(b_pos) < 2.5, "激活 A 传送到已解锁的 B")
+
+	# 谜题原型：火元素点亮 3 座炼成灯 → 密门开启（策划案 §8.1）
+	var lamps: Array = []
+	for offset: Vector3 in [Vector3(2, 0, 0), Vector3(-2, 0, 2), Vector3(0, 0, -2)]:
+		var lamp := (load("res://scenes/world/puzzle_lamp.tscn") as PackedScene).instantiate()
+		add_child(lamp)
+		lamp.global_position = player.global_position + offset
+		lamps.append(lamp)
+	var door := (load("res://scenes/world/puzzle_door.tscn") as PackedScene).instantiate()
+	add_child(door)
+	door.global_position = player.global_position + Vector3(0, 1.5, 5)
+	door.register_lamps(lamps)
+	for lamp in lamps:
+		var lamp_fire := DamageContext.make(player, 1, 10.0, 1.0)
+		lamp_fire.crit_rate = 0.0
+		lamp_fire.with_element(Elements.FIRE, 1.0)
+		Combat.resolve_attack(lamp, lamp_fire)
+	await _frames(5)
+	check(door._open, "3 座炼成灯全部点亮后密门开启")
+
+	# BOSS 蚀核巨像：三阶段 / 护壳熔金削除 / 灼热地板与蒸汽安全区（策划案 §5.4/§9.2）
+	var boss := (load("res://scenes/characters/enemies/boss_colossus.tscn") as PackedScene).instantiate() as EnemyBase
+	add_child(boss)
+	boss.global_position = player.global_position + Vector3(6, 0.5, -6)
+	await _frames(10)
+	check(boss.phase == 1 and boss.poise != null, "BOSS 一阶段（霸体条就绪）")
+	boss.health.take_damage(boss.health.max_hp * 0.35)
+	await _frames(3)
+	check(boss.phase == 2 and boss.shell_active, "70% 进入二阶段并展开金属护壳")
+	check(approx(boss.get_resistance(Elements.METAL), 0.8, 0.001), "护壳金抗 +80%")
+	var boss_fire := DamageContext.make(player, 1, 10.0, 1.0)
+	boss_fire.crit_rate = 0.0
+	boss_fire.with_element(Elements.FIRE, 2.0)
+	Combat.resolve_attack(boss, boss_fire)
+	check(not boss.shell_active, "火打金附着触发熔金 → 直接削除护壳")
+	boss.health.take_damage(boss.health.max_hp * 0.5) # → 约 15%
+	boss._update_phase() # 直接推进阶段判定（破壳后本有 3s 硬直输出窗口，测试不等其自然结束）
+	await _frames(3)
+	check(boss.phase == 3 and is_instance_valid(boss._heat), "30% 进入三阶段并生成灼热地板")
+	boss.global_position = Vector3(60, 0.5, -60) # 撤走 BOSS，避免攻击干扰灼烧计量
+	var hp0 := player.health.hp
+	await _frames(40)
+	check(player.health.hp < hp0, "灼热地板持续灼烧（%.0f → %.0f）" % [hp0, player.health.hp])
+	SteamZone.spawn(self, player.global_position, 3.0, 6.0)
+	var hp1 := player.health.hp
+	await _frames(45)
+	check(approx(player.health.hp, hp1, 0.01), "蒸汽安全区内免疫灼烧（%.0f → %.0f）" % [hp1, player.health.hp])
+	if is_instance_valid(boss._heat):
+		boss._heat.queue_free()
+	boss.queue_free()
+
 	# —— 7. 竞技场敌人补刷（玩测反馈 2026-09-10：打死不刷新）—— #
 	# 注意：此节会加入整套竞技场（7 个补刷槽 + 1 精英），必须放在最后。
 	var arena := (load("res://scenes/world/p0_arena.tscn") as PackedScene).instantiate()

@@ -4,6 +4,14 @@ class_name RunState extends StateBase
 func physics_update(delta: float) -> void:
 	var p := player()
 	var wish := p.wish_direction()
+
+	# P2 攀爬入口：前推且探测到 ≥65° 陡面（策划案 §8.2），且体力可支撑
+	if not wish.is_zero_approx() and p.stamina.can_afford(0.5):
+		var wall := p.probe_wall(wish)
+		if not wall.is_empty() and ClimbState.is_climbable(wall.normal):
+			sm.transition(&"climb", {"normal": wall.normal})
+			return
+
 	var sprinting := p.actor_source.wants_sprint() \
 		and not wish.is_zero_approx() and p.stamina.can_afford(0.1)
 	var speed := p.movement.sprint_speed if sprinting else p.movement.walk_speed

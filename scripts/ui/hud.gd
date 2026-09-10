@@ -13,6 +13,7 @@ extends CanvasLayer
 @onready var party_bar: VBoxContainer = $Root/PartyBar
 @onready var dust_label: Label = $Root/PartyBar/DustLabel
 @onready var reaction_label: Label = $Root/ReactionLabel
+@onready var interact_hint: Label = $Root/InteractHint
 @onready var hint_label: Label = $Root/HintLabel
 @onready var law_label: Label = $Root/LawLabel
 
@@ -102,6 +103,15 @@ func _process(delta: float) -> void:
 		var rect: ColorRect = $Root.get_node(node_name) as ColorRect
 		rect.visible = vignette_on
 		rect.color = color
+
+	# 交互提示（P2：采集/宝箱/传送阵）
+	var interactable := _player.current_interactable
+	if interactable != null and interactable.has_method("prompt"):
+		var text: String = interactable.call("prompt")
+		interact_hint.visible = text != ""
+		interact_hint.text = "[F] " + text if text != "" else ""
+	else:
+		interact_hint.visible = false
 
 	# 反应提示与 R 激活失败提示
 	if _reaction_timer > 0.0:
