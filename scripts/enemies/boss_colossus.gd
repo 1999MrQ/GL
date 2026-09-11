@@ -38,9 +38,10 @@ func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 	if state != State.DEAD:
 		_hp_label.text = "%s %d%%" % [tr(config.display_name_key), roundi(health.ratio() * 100.0)]
-	# 护壳期间持续维持金附着（被熔金消耗时由 break_shell 关闭）
+	# 护壳期间持续维持金附着（被熔金消耗时由 break_shell 关闭）。
+	# 直挂 set_aura：经 apply_incoming 会在有火附着时自触熔金/锈蚀且受 ICD 阻塞
 	if shell_active and state != State.DEAD and not aura.has_aura(Elements.METAL):
-		aura.apply_incoming(Elements.METAL, 4.0)
+		aura.set_aura(Elements.METAL, 4.0)
 
 ## —— 阶段与机制 —— ##
 
@@ -75,19 +76,20 @@ func get_damage_taken_mult() -> float:
 		mult *= 1.5 # 三阶段承伤 +50%（策划案 §5.4）
 	return mult
 
-## 金属护壳：自挂金附着 4GU
+## 金属护壳：直挂金附着 4GU（set_aura 绕过反应管线——护壳自身机制，非元素攻击）
 func apply_shell() -> void:
 	shell_active = true
 	_shell_acc = 0.0
-	aura.apply_incoming(Elements.METAL, 4.0)
+	aura.set_aura(Elements.METAL, 4.0)
 	flash.flash(0.9, Color(0.9, 0.8, 0.3))
 
-## 熔金削壳（Combat 检测到 molten_gold 命中带壳目标时回调，策划案 §9.2）
+## 熔金削壳（Combat 检测到 molten_gold 命中带壳目标时回调，策划案 §9.2——
+## 仅熔金削壳；淬火脆化等其他反应不削，保证"火先金后"是唯一解法）
 func break_shell() -> void:
 	if not shell_active:
 		return
 	shell_active = false
-	aura.aura_elements().erase(Elements.METAL)
+	aura.clear(Elements.METAL)
 	flash.flash(1.0, Color(1.0, 0.8, 0.3))
 	_stagger_total = 3.0 # 破壳硬直：输出窗口
 	if state != State.DEAD:

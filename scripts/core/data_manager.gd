@@ -21,13 +21,20 @@ const _CONFIG_PATHS: Dictionary = {
 
 var _cache: Dictionary = {}
 
-## 按注册名取配置（带缓存）；未注册或加载失败直接断言，配置缺失应尽早暴露。
+## 按注册名取配置（带缓存）。配置缺失属程序错误：debug 用 assert 尽早暴露，
+## release 构建剥离 assert——补 push_error 显式报错并返回 null，避免静默穿透到调用方。
 func config(cfg_name: String) -> Resource:
 	if _cache.has(cfg_name):
 		return _cache[cfg_name]
-	assert(_CONFIG_PATHS.has(cfg_name), "DataManager: 未注册的配置名 %s" % cfg_name)
+	if not _CONFIG_PATHS.has(cfg_name):
+		assert(false, "DataManager: 未注册的配置名 %s" % cfg_name)
+		push_error("DataManager: 未注册的配置名 %s" % cfg_name)
+		return null
 	var res: Resource = load(_CONFIG_PATHS[cfg_name])
-	assert(res != null, "DataManager: 配置加载失败 %s" % _CONFIG_PATHS[cfg_name])
+	if res == null:
+		assert(false, "DataManager: 配置加载失败 %s" % _CONFIG_PATHS[cfg_name])
+		push_error("DataManager: 配置加载失败 %s" % _CONFIG_PATHS[cfg_name])
+		return null
 	_cache[cfg_name] = res
 	return res
 

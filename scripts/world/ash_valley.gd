@@ -15,6 +15,12 @@ const ENEMY_SCENES := {
 const OVERSEER_SCENE := preload("res://scenes/characters/enemies/enemy_overseer.tscn")
 const BOSS_SCENE := preload("res://scenes/characters/enemies/boss_colossus.tscn")
 const GATHER_SCENE := preload("res://scenes/world/gather_node.tscn")
+const CHEST_SCENE := preload("res://scenes/world/chest.tscn")
+const LAMP_SCENE := preload("res://scenes/world/puzzle_lamp.tscn")
+const PUZZLE_DOOR_SCENE := preload("res://scenes/world/puzzle_door.tscn")
+const RUST_DOOR_SCENE := preload("res://scenes/world/puzzle_rust_door.tscn")
+const VISTA_SCENE := preload("res://scenes/world/vista_point.tscn")
+const EROSION_WALL_SCENE := preload("res://scenes/world/erosion_wall.tscn")
 
 const ENEMY_RESPAWN_SEC := 6.0
 const ENEMY_HP_MULT := 8.0
@@ -30,7 +36,8 @@ func _ready() -> void:
 	print("=== GL · 灰烬河谷（P2 白模 V2） ===")
 	print("矿镇(南) → 河谷走廊 → 蚀化洞窟(北，BOSS 蚀核巨像)")
 	print("攀爬：推向 ≥65° 陡面自动扒墙（10 体力/s）· 滑翔：空中再按跳跃（8 体力/s）")
-	print("F 采集/开箱/传送 · 火元素可点亮炼成灯 · BOSS 战用火破金壳、用水开蒸汽安全区")
+	print("F 采集/开箱/传送/观景 · 谜题：火点炼成灯 / 水点亮寒晶镜 / 先水后金蚀断锁链门 · BOSS 战火先金后打熔金破壳、用水开蒸汽安全区")
+	print("P2 第二轮新增：蚀晶壁（金技能造攀爬点，墙顶有宝箱）· F5 存档 / F9 读档（野外采集刷新）")
 
 ## —— 环境 —— ##
 
@@ -93,35 +100,74 @@ func _build_interactables() -> void:
 	_add_gate(&"gate_valley", Vector3(70, 0, 0))
 	_add_gate(&"gate_cave", Vector3(0, 0, -55))
 
-	# 采集点 ×15（策划案 §8.1：矿脉/药草/水镜露）
+	# 采集点（策划案 §8.1：矿脉/药草/水镜露；野外读档刷新，洞窟一次性）
+	var gather_index := 0
 	var ore_spots := [Vector2(-25, 88), Vector2(30, 82), Vector2(-40, 40), Vector2(45, 30), Vector2(-60, -10), Vector2(55, -35)]
 	for p: Vector2 in ore_spots:
-		_add_gather(&"ore", Vector3(p.x, 0, p.y))
+		_add_gather(&"ore", Vector3(p.x, 0, p.y), "gather_%02d" % gather_index, false)
+		gather_index += 1
 	var herb_spots := [Vector2(-15, 70), Vector2(20, 55), Vector2(-35, 5), Vector2(60, 15), Vector2(-5, -20)]
 	for p: Vector2 in herb_spots:
-		_add_gather(&"herb", Vector3(p.x, 0, p.y))
+		_add_gather(&"herb", Vector3(p.x, 0, p.y), "gather_%02d" % gather_index, false)
+		gather_index += 1
 	var dew_spots := [Vector2(-70, 60), Vector2(75, 45), Vector2(-75, -55), Vector2(80, -60)]
 	for p: Vector2 in dew_spots:
-		_add_gather(&"dew", Vector3(p.x, 0, p.y))
+		_add_gather(&"dew", Vector3(p.x, 0, p.y), "gather_%02d" % gather_index, false)
+		gather_index += 1
+	# 洞窟内一次性采集（策划案 §8.1"洞窟内采集为一次性"——读档不刷新，避开 BOSS 仇恨圈）
+	_add_gather(&"ore", Vector3(14, 0, -74), "gather_%02d" % gather_index, true)
+	gather_index += 1
+	_add_gather(&"dew", Vector3(-14, 0, -76), "gather_%02d" % gather_index, true)
 
-	# 宝箱 ×8（策划案 §8.1：不刷新；一枚在攀爬墙顶，一枚在密门后）
+	# 宝箱（策划案 §8.1 ×8 + 蚀晶壁顶/水谜密门后各 1——P2 第二轮密度调优，不刷新）
+	var chest_index := 0
 	for pos: Vector3 in [Vector3(0, 8.05, 78), Vector3(-15, 0, 95), Vector3(18, 0, 78), Vector3(-45, 0, 25),
-		Vector3(50, 0, -15), Vector3(-60, 0, -35), Vector3(40, 0, 40), Vector3(-12, 0, -70)]:
-		var chest := preload("res://scenes/world/chest.tscn").instantiate()
-		chest.position = pos
-		add_child(chest)
+			Vector3(50, 0, -15), Vector3(-60, 0, -35), Vector3(40, 0, 40), Vector3(-12, 0, -70)]:
+		_add_chest(pos, "chest_%02d" % chest_index)
+		chest_index += 1
+	_add_chest(Vector3(78, 10.6, 20), "chest_%02d" % chest_index) # 蚀晶壁顶（金技能攀爬奖励）
+	chest_index += 1
+	_add_chest(Vector3(-52, 0, -35), "chest_%02d" % chest_index) # 水谜密门后
+	chest_index += 1
 
-	# 元素谜题原型（策划案 §8.1：火点燃 3 座炼成灯开启密门）
+	# 元素谜题 1/3（策划案 §8.1 示例）：炼成灯（火）×3 → 密门
 	var lamps: Array = []
 	for pos: Vector3 in [Vector3(46, 0, 52), Vector3(52, 0, 44), Vector3(40, 0, 42)]:
-		var lamp := preload("res://scenes/world/puzzle_lamp.tscn").instantiate()
+		var lamp := LAMP_SCENE.instantiate()
 		lamp.position = pos
 		add_child(lamp)
 		lamps.append(lamp)
-	var door := preload("res://scenes/world/puzzle_door.tscn").instantiate()
+	var door := PUZZLE_DOOR_SCENE.instantiate()
 	door.position = Vector3(46, 1.5, 36)
 	add_child(door)
 	door.register_lamps(lamps)
+
+	# 元素谜题 2/3：寒晶镜（水附着点亮）×3 → 密门（P2 第二轮，复用灯的管线）
+	var mirrors: Array = []
+	for pos: Vector3 in [Vector3(-48, 0, -28), Vector3(-56, 0, -28), Vector3(-52, 0, -24)]:
+		var mirror := LAMP_SCENE.instantiate()
+		mirror.target_element = Elements.WATER
+		mirror.position = pos
+		add_child(mirror)
+		mirrors.append(mirror)
+	var mirror_door := PUZZLE_DOOR_SCENE.instantiate()
+	mirror_door.position = Vector3(-52, 1.5, -32)
+	add_child(mirror_door)
+	mirror_door.register_lamps(mirrors)
+
+	# 元素谜题 3/3：锈蚀锁链门——需在门上触发锈蚀反应（先水后金，策划案 §5.3）
+	var rust_door := RUST_DOOR_SCENE.instantiate()
+	rust_door.position = Vector3(-12, 1.5, -66) # 守住洞窟内既有宝箱
+	add_child(rust_door)
+
+	# 观景点 ×2（策划案 §8.1）：攀爬教学墙顶 / 洞窟口
+	_add_vista("VISTA_VALLEY", Vector3(1.5, 8.1, 78))
+	_add_vista("VISTA_CAVE", Vector3(4, 0.5, -50))
+
+	# 蚀晶壁（策划案 §8.2"第一期亮点"）：金元素技能命中生成攀爬抓握点，墙顶有宝箱
+	var erosion := EROSION_WALL_SCENE.instantiate()
+	erosion.position = Vector3(78, 5.5, 20)
+	add_child(erosion)
 
 func _add_gate(gate_id: StringName, pos: Vector3) -> void:
 	var gate := preload("res://scenes/world/teleport_gate.tscn").instantiate()
@@ -129,11 +175,25 @@ func _add_gate(gate_id: StringName, pos: Vector3) -> void:
 	gate.position = pos
 	add_child(gate)
 
-func _add_gather(resource_id: StringName, pos: Vector3) -> void:
+func _add_gather(resource_id: StringName, pos: Vector3, id: String, one_shot: bool) -> void:
 	var node := GATHER_SCENE.instantiate()
 	node.resource_id = resource_id
+	node.node_id = id
+	node.one_shot = one_shot
 	node.position = pos
 	add_child(node)
+
+func _add_chest(pos: Vector3, id: String) -> void:
+	var chest := CHEST_SCENE.instantiate()
+	chest.node_id = id
+	chest.position = pos
+	add_child(chest)
+
+func _add_vista(vista_key: String, pos: Vector3) -> void:
+	var vista := VISTA_SCENE.instantiate()
+	vista.vista_key = vista_key
+	vista.position = pos
+	add_child(vista)
 
 ## —— 敌人布设（槽位化补刷；BOSS/精英不补刷）—— ##
 

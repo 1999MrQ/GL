@@ -41,6 +41,7 @@ aura_cost = 1.0
 effect_id = &"armor_break"
 effect_duration = 6.0
 effect_value = 0.25
+breaks_shell = true
 
 [sub_resource type="Resource" id="ReactionDefinition_rust"]
 script = ExtResource("2_def")

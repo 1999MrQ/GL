@@ -69,16 +69,16 @@ func _process(delta: float) -> void:
 	stamina_bar.value = _player.stamina.ratio()
 	energy_bar.value = _player.runtime.energy / CharacterRuntime.MAX_ENERGY
 
-	# 技能状态
+	# 技能状态（文案走本地化 key，禁止硬编码）
 	if _player.runtime.e_cooldown_left > 0.0:
 		e_label.text = "E %s %.1fs" % [tr(_player.stats.skill_e_name_key), _player.runtime.e_cooldown_left]
 	else:
-		e_label.text = "E %s 就绪" % tr(_player.stats.skill_e_name_key)
+		e_label.text = "E %s %s" % [tr(_player.stats.skill_e_name_key), tr("HUD_SKILL_READY")]
 	if _player.runtime.can_cast_burst():
-		q_label.text = "Q %s 就绪" % tr(_player.stats.skill_q_name_key)
+		q_label.text = "Q %s %s" % [tr(_player.stats.skill_q_name_key), tr("HUD_SKILL_READY")]
 	else:
-		q_label.text = "Q %s 充能 %d%%" % [tr(_player.stats.skill_q_name_key), roundi(_player.runtime.energy)]
-	r_label.text = "★ R 等价交换已激活" if _player.equivalence_active else ""
+		q_label.text = "Q %s %s" % [tr(_player.stats.skill_q_name_key), tr("HUD_SKILL_CHARGING") % roundi(_player.runtime.energy)]
+	r_label.text = tr("HUD_EQUIV_ACTIVE") if _player.equivalence_active else ""
 
 	# 队伍栏
 	if _party != null:

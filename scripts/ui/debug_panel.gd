@@ -33,7 +33,7 @@ func _process(delta: float) -> void:
 		get_tree().get_node_count(),
 		get_tree().get_nodes_in_group("enemies").size(),
 	])
-	var player := get_tree().get_first_node_in_group("player") as Node3D
+	var player := _active_player()
 	if player != null:
 		var pos := player.global_position
 		lines.append("Player %.1f, %.1f, %.1f" % [pos.x, pos.y, pos.z])
@@ -68,19 +68,27 @@ func _unhandled_input(event: InputEvent) -> void:
 				_aura_viz = not _aura_viz
 				get_tree().set_meta(AURA_VIZ_META, _aura_viz)
 
+## 当前操作角色：优先激活组（"player" 组首个可能是隐藏队友）；无队伍时回退（测试独立玩家）
+func _active_player() -> PlayerCharacter:
+	var tree := get_tree()
+	var node := tree.get_first_node_in_group("player_active")
+	if node == null:
+		node = tree.get_first_node_in_group("player")
+	return node as PlayerCharacter
+
 func _toggle_invincible() -> void:
-	var player := get_tree().get_first_node_in_group("player") as PlayerCharacter
+	var player := _active_player()
 	if player != null:
 		player.health.invincible = not player.health.invincible
 
 func _get_player_invincible() -> String:
-	var player := get_tree().get_first_node_in_group("player") as PlayerCharacter
+	var player := _active_player()
 	return "on" if player != null and player.health.invincible else "off"
 
 func _teleport_player() -> void:
-	var player := get_tree().get_first_node_in_group("player") as PlayerCharacter
+	var player := _active_player()
 	if player != null:
-		player.global_position = Vector3(0, 2, 10)
+		player.global_position = player.spawn_point() + Vector3.UP
 		player.horizontal_velocity = Vector3.ZERO
 		player.vertical_velocity = 0.0
 

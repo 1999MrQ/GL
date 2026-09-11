@@ -2,8 +2,11 @@ keys,zh_CN
 HUD_HP,生命
 HUD_STAMINA,体力
 HUD_DUST,炼金尘
-HUD_HINT,左键 三段连击 · E 炼成技 · Q 炼成爆发 · R 等价交换 · 1/2/3 切换 · F3 调试
+HUD_HINT,左键 三段连击 · E 炼成技 · Q 炼成爆发 · R 等价交换 · 1/2/3 切换 · F5 存档 · F9 读档 · F3 调试
 HUD_EQUIVALENCE_LAW,等价交换法则：欲有所得，必有所失
+HUD_SKILL_READY,就绪
+HUD_SKILL_CHARGING,充能 %d%%
+HUD_EQUIV_ACTIVE,★ R 等价交换已激活
 MENU_PAUSED,已暂停
 MENU_RESUME_HINT,按 Esc 继续 · 点击画面锁定鼠标
 ELEMENT_FIRE,火
@@ -36,3 +39,6 @@ INTERACT_GATHER,采集
 INTERACT_CHEST,开启宝箱
 INTERACT_UNLOCK,激活传送阵
 INTERACT_TELEPORT,传送
+INTERACT_VISTA,观赏
+VISTA_VALLEY,观景点 · 灰烬河谷：蚀化自矿脉深处蔓延，河谷只是开始
+VISTA_CAVE,观景点 · 蚀化洞窟：黑暗深处有什么在搏动

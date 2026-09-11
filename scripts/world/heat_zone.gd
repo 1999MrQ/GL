@@ -36,7 +36,11 @@ func _physics_process(delta: float) -> void:
 		return
 	_acc -= TICK_SEC
 	var center := global_position
-	for node in get_tree().get_nodes_in_group("player"):
+	# 只结算当前激活角色（"player" 组含隐藏队友，会把后台角色烧死）；无队伍时回退（测试独立玩家）
+	var targets := get_tree().get_nodes_in_group("player_active")
+	if targets.is_empty():
+		targets = get_tree().get_nodes_in_group("player")
+	for node in targets:
 		var player := node as PlayerCharacter
 		if player == null or player.health.is_dead():
 			continue

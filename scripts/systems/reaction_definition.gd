@@ -20,6 +20,9 @@ enum ReactionType { AMPLIFY, TRANSFORM }
 @export var effect_duration: float = 0.0
 ## 效果强度：slow=减速比例 / armor_break=减防比例 / dot=剧变每秒伤害系数 / stagger_up=硬直时间倍率
 @export var effect_value: float = 0.0
+## 反应专属机制：触发即削除目标护壳（熔金专属，策划案 §9.2"熔金反应可直接削除护壳"——
+## 淬火脆化等其他金火反应不削壳，保证"火先金后"的双角色配合是唯一解法）
+@export var breaks_shell := false
 
 ## 查表 key："先手元素|后手元素"
 func key() -> String:

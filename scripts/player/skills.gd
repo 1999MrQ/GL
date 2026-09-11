@@ -48,6 +48,10 @@ static func cast(p: PlayerCharacter, is_e: bool, eq: Dictionary) -> void:
 		_:
 			push_warning("Skills: 未知技能形态 %s" % shape)
 
+	# 蚀晶壁抓握点（策划案 §8.2"第一期亮点"）：金元素技能命中蚀晶壁 → 生成临时攀爬点
+	if cfg.element == Elements.METAL:
+		_spawn_climb_holds(p, origin, dir, range_size)
+
 	# 元素色炼成阵占位特效
 	TransmuteRing.spawn(p.get_parent(), origin, maxf(2.0, range_size * 0.7), Elements.color(cfg.element))
 	# 策划案 §5.4 BOSS 三阶段：水元素技能打地板生成蒸汽安全区（灼热地板的对策）
@@ -105,8 +109,9 @@ static func _cast_toss_field(p: PlayerCharacter, origin: Vector3, dir: Vector3,
 static func _cast_heal_ring(p: PlayerCharacter, origin: Vector3, radius: float,
 		ctx: DamageContext, cfg: CharacterConfig) -> bool:
 	var hit_any := _cast_radius(p, origin, radius, ctx, Vector3.ZERO)
-	# 治疗全队（治疗量随元素精通：白模 = 比例 × (1 + EM/400)，策划案 §7.3）
-	var heal := cfg.base_hp * cfg.skill_e_heal_ratio * (1.0 + cfg.element_mastery / 400.0)
+	# 治疗全队（治疗量随元素精通：白模 = 比例 × (1 + EM/400)，策划案 §7.3；
+	# 基数取当前最大 HP（runtime）——用 base_hp 会在等级>1 时治疗不随成长）
+	var heal := p.runtime.max_hp * cfg.skill_e_heal_ratio * (1.0 + cfg.element_mastery / 400.0)
 	var party := p.get_party()
 	if party != null:
 		for member in party.members:
@@ -131,3 +136,26 @@ static func _cast_freeze_burst(p: PlayerCharacter, origin: Vector3, radius: floa
 			if status != null:
 				status.apply(&"frozen", 0.0, freeze)
 	return hit_any
+
+## 金元素命中蚀晶壁：沿朝向射线找壁面（world 层），向上生成一列抓握点（技术方案 §3.3）
+static func _spawn_climb_holds(p: PlayerCharacter, origin: Vector3, dir: Vector3, range_size: float) -> void:
+	var from := origin + Vector3.UP * 1.0
+	var query := PhysicsRayQueryParameters3D.create(from, from + dir * range_size, 1) # 仅 world 层
+	var hit := p.get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return
+	var collider: Variant = hit.get("collider")
+	if not (collider is Node) or not (collider as Node).is_in_group(ErosionWall.GROUP):
+		return
+	var normal: Vector3 = hit.get("normal", Vector3.UP)
+	if not ClimbState.is_climbable(normal):
+		return
+	var base: Vector3 = hit.get("position")
+	# 基点附近已有抓握点则不重复生成（连按 E 不堆叠）
+	for node in p.get_tree().get_nodes_in_group(ClimbHold.GROUP):
+		var existing := node as Node3D
+		if existing != null and existing.global_position.distance_to(base) < 2.0:
+			return
+	# 首格贴近命中点（约玩家胸口高度，保证站立时墙面探测可及），其后每 1.6m 一格
+	for i in 5:
+		ClimbHold.spawn(p.get_parent(), base + Vector3.UP * (0.2 + 1.6 * float(i)), normal)

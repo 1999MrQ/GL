@@ -279,8 +279,14 @@ func _face_toward(dir: Vector3, delta: float) -> void:
 		atan2(face_dir.x, face_dir.z),
 		minf(1.0, 10.0 * delta))
 
+## 索敌目标：优先激活角色组（技术方案 §3.2：非激活者须从仇恨中移除——
+## "player" 组含全部常驻成员，取首个会锁定到隐藏的旧角色）；无队伍时回退（测试独立玩家）。
 func _find_player() -> Node3D:
-	return get_tree().get_first_node_in_group("player") as Node3D
+	var tree := get_tree()
+	var active := tree.get_first_node_in_group("player_active")
+	if active != null:
+		return active as Node3D
+	return tree.get_first_node_in_group("player") as Node3D
 
 ## 调试：附着可视化（技术方案 10.2：元素附着状态可视化）。
 ## 经 SceneTree 元数据读取开关，避免 EnemyBase ⇄ DebugPanel 的类名循环依赖。

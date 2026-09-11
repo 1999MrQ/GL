@@ -15,7 +15,7 @@ height = 0.36
 
 [node name="WaterBolt" type="Area3D"]
 collision_layer = 0
-collision_mask = 2
+collision_mask = 3
 script = ExtResource("1_bolt")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]

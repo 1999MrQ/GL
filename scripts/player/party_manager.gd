@@ -9,6 +9,9 @@ const SWITCH_COOLDOWN := 1.0
 const DEAD_REVIVE_SEC := 10.0
 const PLAYER_LAYER := 2
 const PLAYER_MASK := 5 # world + enemy_body
+## 激活角色专用组：敌人索敌 / 灼热地板 / 调试面板只作用于当前操作角色。
+## "player" 组含全部常驻成员，不能用于索敌（技术方案 §3.2：非激活者须从仇恨中移除）。
+const ACTIVE_GROUP := "player_active"
 
 const PLAYER_SCENE := preload("res://scenes/characters/player/player_character.tscn")
 const INPUT_ACTIONS: Array[StringName] = [&"switch_1", &"switch_2", &"switch_3"]
@@ -104,6 +107,7 @@ func _set_active(index: int, initial: bool) -> void:
 		other.collision_layer = 0
 		other.collision_mask = 0
 		other.camera_rig.camera.current = false
+		other.remove_from_group(ACTIVE_GROUP) # 敌人 AI / 灼热地板只认激活者（技术方案 §3.2"从仇恨列表移除"）
 
 	# 激活目标（位置对齐：出现在被切换者位置，策划案 §3.2）
 	var member: PlayerCharacter = members[index]
@@ -112,6 +116,7 @@ func _set_active(index: int, initial: bool) -> void:
 	member.process_mode = Node.PROCESS_MODE_INHERIT
 	member.collision_layer = PLAYER_LAYER
 	member.collision_mask = PLAYER_MASK
+	member.add_to_group(ACTIVE_GROUP)
 	# 资源不重置：HP 从 runtime 恢复（后台期间受伤/治疗都记录在 runtime）
 	member.health.hp = clampf(member.runtime.hp, 1.0, member.runtime.max_hp)
 	member.camera_rig.camera.current = true
@@ -142,3 +147,43 @@ func _handle_active_death(i: int) -> void:
 
 func _start_revive_timer(i: int) -> void:
 	_revive_left[i] = DEAD_REVIVE_SEC
+
+# —— 存档（技术方案 §7：party / inventory 分块；P2 第二轮接入，编排见 GameSaveFlow）—— #
+
+## 汇总队伍运行时与背包（HP/MP/能量随角色保存，策划案 §6.3-3）
+func to_save() -> Dictionary:
+	var party := {}
+	for rt in runtimes:
+		party[String(rt.character_id)] = {
+			"hp": rt.hp,
+			"mp": rt.mp,
+			"energy": rt.energy,
+		}
+	return {
+		"party": party,
+		"inventory": {
+			"dust": inventory.dust,
+			"iron": inventory.iron,
+			"herb": inventory.herb,
+			"dew": inventory.dew,
+		},
+	}
+
+## 回放存档：runtime 是权威存储，回写后同步激活成员的组件视图
+func apply_save(data: Dictionary) -> void:
+	var party: Dictionary = data.get("party", {})
+	for rt in runtimes:
+		var d: Dictionary = party.get(String(rt.character_id), {})
+		if d.is_empty():
+			continue
+		rt.hp = clampf(float(d.get("hp", rt.hp)), 1.0, rt.max_hp)
+		rt.mp = clampf(float(d.get("mp", rt.mp)), 0.0, rt.max_mp)
+		rt.energy = clampf(float(d.get("energy", rt.energy)), 0.0, CharacterRuntime.MAX_ENERGY)
+	var inv: Dictionary = data.get("inventory", {})
+	inventory.dust = int(inv.get("dust", inventory.dust))
+	inventory.iron = int(inv.get("iron", inventory.iron))
+	inventory.herb = int(inv.get("herb", inventory.herb))
+	inventory.dew = int(inv.get("dew", inventory.dew))
+	if active_index < members.size() and is_instance_valid(members[active_index]):
+		var active: PlayerCharacter = members[active_index]
+		active.health.hp = clampf(active.runtime.hp, 1.0, active.runtime.max_hp)

@@ -5,10 +5,11 @@ func physics_update(delta: float) -> void:
 	var p := player()
 	var wish := p.wish_direction()
 
-	# P2 攀爬入口：前推且探测到 ≥65° 陡面（策划案 §8.2），且体力可支撑
+	# P2 攀爬入口：前推且探测到 ≥65° 陡面（策划案 §8.2），且体力可支撑；
+	# 蚀晶壁（蚀晶化表面）徒手不可攀，需金技能生成抓握点（策划案 §8.2）
 	if not wish.is_zero_approx() and p.stamina.can_afford(0.5):
 		var wall := p.probe_wall(wish)
-		if not wall.is_empty() and ClimbState.is_climbable(wall.normal):
+		if not wall.is_empty() and ClimbState.is_climbable(wall.normal) and not ClimbState.is_blocked(wall):
 			sm.transition(&"climb", {"normal": wall.normal})
 			return
 

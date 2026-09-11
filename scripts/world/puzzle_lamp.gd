@@ -1,10 +1,12 @@
 class_name PuzzleLamp extends StaticBody3D
-## 炼成灯（策划案 §8.1 元素谜题示例：用火点燃 3 座炼成灯开启密门）。
-## 火元素伤害命中（火附着）即点亮；同 puzzle_id 全亮 → 对应密门开启。
+## 炼成灯（策划案 §8.1 元素谜题之一：用火点燃 3 座炼成灯开启密门）。
+## 对应元素伤害命中（元素附着）即点亮；同 puzzle_id 全亮 → 对应密门开启。
+## P2 第二轮泛化：target_element 可配水（寒晶镜）等元素，谜题 2/3 复用本管线。
 ## 实现：与怪物共用同一套附着/结算管线（超大血量不可打死的可命中对象），
-## 监听自己的火附着事件点亮。
+## 监听自己的目标元素附着事件点亮。
 
 @export var puzzle_id: StringName = &"puzzle_01"
+@export var target_element: StringName = Elements.FIRE ## 点亮所需元素（火=炼成灯 / 水=寒晶镜）
 
 var _lit := false
 var _flame: MeshInstance3D
@@ -71,8 +73,8 @@ func status_holder() -> StatusHolder:
 	return null
 
 func _on_element_applied(target: Node, element: StringName, _gu: float) -> void:
-	if _lit or target != self or element != Elements.FIRE:
+	if _lit or target != self or element != target_element:
 		return
 	_lit = true
-	(_flame.mesh as SphereMesh).material.albedo_color = Color(1.0, 0.6, 0.15)
-	TransmuteRing.spawn(get_parent(), global_position, 0.8, Elements.color(Elements.FIRE))
+	(_flame.mesh as SphereMesh).material.albedo_color = Elements.color(target_element)
+	TransmuteRing.spawn(get_parent(), global_position, 0.8, Elements.color(target_element))

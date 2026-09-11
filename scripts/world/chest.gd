@@ -1,6 +1,8 @@
 class_name Chest extends Interactable
 ## 宝箱（策划案 §8.1：不刷新）：F 开启，给炼金尘与素材（掉落表 §9.6 白模版）。
 
+@export var node_id := "" ## 存档稳定 ID（区域布设方分配；空 = 不入存档）
+
 var _opened := false
 var _body: MeshInstance3D
 
@@ -31,3 +33,15 @@ func interact(player: PlayerCharacter) -> void:
 
 func prompt() -> String:
 	return "" if _opened else tr("INTERACT_CHEST")
+
+func opened() -> bool:
+	return _opened
+
+## 读档恢复：静默置为已开启（保持已开视觉、不可再交互——策划案 §8.1 宝箱不刷新）
+func consume_silent() -> void:
+	if _opened:
+		return
+	_opened = true
+	remove_from_group("interactables")
+	var mat := (_body.mesh as BoxMesh).material as StandardMaterial3D
+	mat.albedo_color = Color(0.5, 0.9, 0.5)

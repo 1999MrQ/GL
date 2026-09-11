@@ -73,6 +73,19 @@ func apply_incoming(element: StringName, gu_amount: float) -> ReactionDefinition
 	_notify_applied(element)
 	return null
 
+## 直接设置附着量（绕过反应管线与 ICD）。仅供宿主自身机制使用（如 BOSS 自挂护壳——
+## 经 apply_incoming 会在有火附着时自触熔金、在有水附着时自触锈蚀，且受 ICD 阻塞）。
+## 外部攻击附着请一律走 apply_incoming。
+func set_aura(element: StringName, gu_amount: float) -> void:
+	if element == &"" or gu_amount <= 0.0:
+		return
+	_auras[element] = maxf(_auras.get(element, 0.0), gu_amount)
+	_notify_applied(element)
+
+## 清除某元素附着（熔金削壳等机制）；不动 ICD 时钟。
+func clear(element: StringName) -> void:
+	_auras.erase(element)
+
 func _notify_reaction(rd: ReactionDefinition) -> void:
 	var host := get_parent()
 	if host != null:

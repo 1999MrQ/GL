@@ -22,11 +22,14 @@ func _ready() -> void:
 	_ring.mesh = mesh
 	_ring.position.y = 0.06
 	add_child(_ring)
-	if gate_id in unlocked_ids:
-		_mat.albedo_color = Color(0.5, 1.0, 1.0, 0.7)
+	refresh_visual()
 
 func is_unlocked() -> bool:
 	return gate_id in unlocked_ids
+
+## 按解锁表刷新环体视觉（_ready 与读档后调用）
+func refresh_visual() -> void:
+	_mat.albedo_color = Color(0.5, 1.0, 1.0, 0.7) if is_unlocked() else Color(0.4, 0.7, 1.0, 0.35)
 
 func interact(player: PlayerCharacter) -> void:
 	if not is_unlocked():

@@ -262,6 +262,10 @@ func _run() -> void:
 	check(overseer.poise.is_broken() and approx(overseer.get_damage_taken_mult(), 1.3, 0.001),
 		"破霸后 5s 易伤（承伤 ×1.3）")
 	overseer.queue_free()
+	# 释放队伍：后续 BOSS/攀爬节用独立玩家，且敌人索敌只认激活组（player_active）——
+	# 队伍在场会把 BOSS 仇恨引到远处的后台站位上（第四轮审查 S1）
+	pm.queue_free()
+	await _frames(3)
 
 	# —— 6b. P2：攀爬 / 滑翔 / 交互 / 谜题 / BOSS 三阶段 —— #
 	var p2_pos: Vector3 = player.global_position
@@ -372,11 +376,22 @@ func _run() -> void:
 	await _frames(3)
 	check(boss.phase == 2 and boss.shell_active, "70% 进入二阶段并展开金属护壳")
 	check(approx(boss.get_resistance(Elements.METAL), 0.8, 0.001), "护壳金抗 +80%")
+	# 火直打护壳 = 金先火后 → 淬火脆化，不削壳（策划案 §9.2：仅熔金削壳——
+	# 火单独可破壳会架空"火先金后"的双角色配合设计；第四轮审查 S2）
 	var boss_fire := DamageContext.make(player, 1, 10.0, 1.0)
 	boss_fire.crit_rate = 0.0
 	boss_fire.with_element(Elements.FIRE, 2.0)
-	Combat.resolve_attack(boss, boss_fire)
-	check(not boss.shell_active, "火打金附着触发熔金 → 直接削除护壳")
+	var r_quench: Dictionary = Combat.resolve_attack(boss, boss_fire)
+	check(boss.shell_active and r_quench.get("reaction", &"") == &"quench_brittle",
+		"火直打护壳触发淬火而非熔金，护壳不削（策划案 §9.2）")
+	await get_tree().create_timer(2.7, true).timeout # 过 2.5s ICD（淬火对火/金双向设 ICD）
+	boss.aura.set_aura(Elements.FIRE, 2.0) # 模拟无壳窗口期莉赛尔已挂的火先手
+	var boss_metal := DamageContext.make(player, 1, 10.0, 1.0)
+	boss_metal.crit_rate = 0.0
+	boss_metal.with_element(Elements.METAL, 2.0)
+	var r_molten: Dictionary = Combat.resolve_attack(boss, boss_metal)
+	check(not boss.shell_active and r_molten.get("reaction", &"") == &"molten_gold",
+		"火先金后触发熔金 → 护壳削除（策划案 §5.4：必须火+金）")
 	boss.health.take_damage(boss.health.max_hp * 0.5) # → 约 15%
 	boss._update_phase() # 直接推进阶段判定（破壳后本有 3s 硬直输出窗口，测试不等其自然结束）
 	await _frames(3)
@@ -392,6 +407,103 @@ func _run() -> void:
 	if is_instance_valid(boss._heat):
 		boss._heat.queue_free()
 	boss.queue_free()
+
+	# —— 6c. P2 第二轮：蚀晶壁 / 锈蚀锁链门 / 观景点 / 存档流 —— #
+	# 蚀晶壁（策划案 §8.2）：徒手不可攀；金元素技能命中生成抓握点后可攀
+	player.global_position = Vector3(p2_pos.x + 15.0, 0.5, p2_pos.z + 15.0)
+	player.face_dir = Vector3.FORWARD
+	player.horizontal_velocity = Vector3.ZERO
+	await _frames(3)
+	var erosion := (load("res://scenes/world/erosion_wall.tscn") as PackedScene).instantiate()
+	add_child(erosion)
+	erosion.global_position = player.global_position + Vector3(0, 5.0, -1.3)
+	await _frames(2)
+	Input.action_press("move_forward")
+	await _frames(10)
+	Input.action_release("move_forward")
+	check(player.fsm.current_id != &"climb", "蚀晶壁徒手不可攀（无抓握点时拒绝进入攀爬）")
+	Input.action_press("skill_e") # 独立玩家默认艾登（金）→ 生成抓握点
+	await _frames(3)
+	Input.action_release("skill_e")
+	await _frames(2)
+	check(get_tree().get_nodes_in_group("climb_holds").size() >= 3,
+		"金元素技能命中蚀晶壁生成抓握点（≥3 个）")
+	Input.action_press("move_forward")
+	await _frames(10)
+	Input.action_release("move_forward")
+	check(player.fsm.current_id == &"climb", "踩上抓握点进入攀爬（炼金术×探索）")
+	Input.action_press("jump") # 跳离墙面，释放玩家
+	await _frames(3)
+	Input.action_release("jump")
+	await _frames(5)
+
+	# 锈蚀锁链门（谜题 3/3）：需先水后金触发锈蚀反应开启（策划案 §5.3 组合顺序）
+	var rust_door := (load("res://scenes/world/puzzle_rust_door.tscn") as PackedScene).instantiate()
+	add_child(rust_door)
+	rust_door.global_position = player.global_position + Vector3(0, 1.5, -4.0)
+	await _frames(2)
+	var chain_water := DamageContext.make(player, 1, 10.0, 1.0)
+	chain_water.crit_rate = 0.0
+	chain_water.with_element(Elements.WATER, 2.0)
+	Combat.resolve_attack(rust_door, chain_water)
+	check(not rust_door.is_open(), "仅水附着未触发锈蚀，门保持关闭")
+	var chain_metal := DamageContext.make(player, 1, 10.0, 1.0)
+	chain_metal.crit_rate = 0.0
+	chain_metal.with_element(Elements.METAL, 2.0)
+	var r_rust: Dictionary = Combat.resolve_attack(rust_door, chain_metal)
+	check(r_rust.get("reaction", &"") == &"rust" and rust_door.is_open(),
+		"金后手触发锈蚀 → 锁链蚀断门开（先水后金）")
+	rust_door.queue_free()
+
+	# 观景点（策划案 §8.1 ×2）：一次性观赏
+	var vista := (load("res://scenes/world/vista_point.tscn") as PackedScene).instantiate()
+	add_child(vista)
+	vista.global_position = player.global_position + Vector3(0, 0, 1.2)
+	await _frames(2)
+	vista.interact(player)
+	check(vista.is_visited(), "F 观赏观景点（一次性）")
+
+	# 存档流（F5/F9 背后逻辑 GameSaveFlow）：野外采集读档刷新 / 洞窟一次性不刷新 / 队伍往返
+	var pm2 := PartyManager.new()
+	add_child(pm2)
+	pm2.setup(Vector3(70, 0.5, 70), [
+		DataManager.config("char_aiden"),
+		DataManager.config("char_lisea"),
+		DataManager.config("char_kaven"),
+	])
+	await _frames(3)
+	var save_aiden := pm2.members[0] as PlayerCharacter
+	save_aiden.health.take_damage(300.0)
+	pm2.inventory.add_dust(7)
+	var cave_gather := (load("res://scenes/world/gather_node.tscn") as PackedScene).instantiate()
+	cave_gather.node_id = "gather_cave_test"
+	cave_gather.one_shot = true
+	add_child(cave_gather)
+	cave_gather.global_position = Vector3(70, 0, 72)
+	await _frames(2)
+	cave_gather.interact(save_aiden) # 洞窟一次性：采集中即记录进注册表
+	check(GameSaveFlow.save_game(get_tree()), "F5 存档写入成功（队伍/背包/世界三块）")
+	# 篡改现场后读档：应恢复存档时状态
+	save_aiden.health.heal(999.0)
+	pm2.inventory.dust = 0
+	var cave_rebuild := (load("res://scenes/world/gather_node.tscn") as PackedScene).instantiate()
+	cave_rebuild.node_id = "gather_cave_test" # 模拟重新进入世界：同 ID 一次性节点重建
+	cave_rebuild.one_shot = true
+	add_child(cave_rebuild)
+	var field_rebuild := (load("res://scenes/world/gather_node.tscn") as PackedScene).instantiate()
+	field_rebuild.node_id = "gather_field_test" # 野外点：读档后应刷新（仍可采）
+	add_child(field_rebuild)
+	await _frames(2)
+	check(GameSaveFlow.load_game(get_tree()), "F9 读档成功")
+	await _frames(3)
+	check(approx(save_aiden.runtime.hp, 800.0, 1.0) and pm2.inventory.dust == 7,
+		"读档恢复队伍 HP 与背包（HP=%.0f dust=%d）" % [save_aiden.runtime.hp, pm2.inventory.dust])
+	check(not is_instance_valid(cave_rebuild), "洞窟一次性采集读档后不刷新（策划案 §8.1）")
+	check(is_instance_valid(field_rebuild) and not field_rebuild.taken(),
+		"野外采集点读档后刷新（策划案 §8.1）")
+	pm2.queue_free()
+	if is_instance_valid(field_rebuild):
+		field_rebuild.queue_free()
 
 	# —— 7. 竞技场敌人补刷（玩测反馈 2026-09-10：打死不刷新）—— #
 	# 注意：此节会加入整套竞技场（7 个补刷槽 + 1 精英），必须放在最后。

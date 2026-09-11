@@ -1,0 +1,24 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/erosion_wall.gd" id="1_ew"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_erosion"]
+size = Vector3(6, 10, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_erosion"]
+albedo_color = Color(0.42, 0.28, 0.5, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_erosion"]
+size = Vector3(6, 10, 1)
+material = SubResource("Mat_erosion")
+
+[node name="ErosionWall" type="StaticBody3D"]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_ew")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_erosion")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_erosion")

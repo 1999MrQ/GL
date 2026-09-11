@@ -66,3 +66,14 @@ func _exit_tree() -> void:
 	EventBus.damage_number_requested.disconnect(_spawn_damage_number)
 	EventBus.reaction_triggered.disconnect(_spawn_reaction_pop)
 	EventBus.enemy_died.disconnect(_on_enemy_died_drop)
+
+## P2 第二轮：F5 存档 / F9 读档（GameSaveFlow 编排；完整存档 UI 为 P3 清单）
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("save_game"):
+		get_viewport().set_input_as_handled()
+		if GameSaveFlow.save_game(get_tree()):
+			print("=== 已存档（F5） ===")
+	elif event.is_action_pressed("load_game"):
+		get_viewport().set_input_as_handled()
+		if GameSaveFlow.load_game(get_tree()):
+			print("=== 已读档（F9）：野外采集点已刷新（策划案 §8.1） ===")

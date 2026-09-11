@@ -12,6 +12,12 @@ const MIN_STEEPNESS_DOT := 0.42
 static func is_climbable(wall_normal: Vector3) -> bool:
 	return wall_normal.y <= MIN_STEEPNESS_DOT
 
+## 蚀晶壁（策划案 §8.2）：表面蚀晶化的陡壁徒手不可攀——
+## 需金元素技能生成抓握点（ClimbHold）后才可通过；攀爬入口（run/air）调用
+static func is_blocked(wall: Dictionary) -> bool:
+	var collider: Variant = wall.get("collider")
+	return collider is Node and (collider as Node).is_in_group(ErosionWall.GROUP)
+
 var wall_normal := Vector3.BACK
 
 func enter(msg: Dictionary) -> void:

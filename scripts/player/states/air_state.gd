@@ -42,10 +42,10 @@ func physics_update(delta: float) -> void:
 	p.horizontal_move(wish * speed, p.movement.accel * p.movement.air_control * (1.5 if gliding else 1.0), delta)
 	p.face_toward(wish, delta)
 
-	# 攀爬入口：空中贴向 ≥65° 陡面（滑翔贴墙时尤为自然）
+	# 攀爬入口：空中贴向 ≥65° 陡面（滑翔贴墙时尤为自然）；蚀晶壁除外（需抓握点）
 	if not wish.is_zero_approx():
 		var hit := p.probe_wall(wish)
-		if not hit.is_empty() and ClimbState.is_climbable(hit.normal):
+		if not hit.is_empty() and ClimbState.is_climbable(hit.normal) and not ClimbState.is_blocked(hit):
 			p.vertical_velocity = 0.0
 			sm.transition(&"climb", {"normal": hit.normal})
 			return

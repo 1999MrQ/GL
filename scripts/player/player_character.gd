@@ -82,6 +82,9 @@ func _bind_runtime() -> void:
 	if not health.damaged.is_connected(_sync_hp_to_runtime):
 		health.damaged.connect(_sync_hp_to_runtime)
 		health.healed.connect(_sync_hp_to_runtime)
+	# 死亡接线（此前断裂：player_died 事件、独立模式复活计时、_dead 标志全部未生效）
+	if not health.died.is_connected(_on_died):
+		health.died.connect(_on_died)
 	level = runtime.level()
 	atk = runtime.atk()
 
@@ -99,6 +102,8 @@ func _physics_process(delta: float) -> void:
 
 	stamina.tick(delta)
 	_tick_combat_inputs()
+	if party == null:
+		runtime.tick_resources(delta) # 独立模式：无 PartyManager 代管，自行推进冷却与 MP
 	if equivalence_active:
 		equivalence_timer -= delta
 		if equivalence_timer <= 0.0:
@@ -290,6 +295,10 @@ func _on_died() -> void:
 
 func is_dead() -> bool:
 	return _dead
+
+## 出生点（调试传送 T 用；与独立模式复活点一致）
+func spawn_point() -> Vector3:
+	return _spawn_position
 
 ## 就地满血复活（PartyManager 传出生点/原地）
 func revive_at(pos: Vector3) -> void:
